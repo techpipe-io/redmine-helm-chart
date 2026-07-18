@@ -1,0 +1,12 @@
+Redmine {{ .Chart.AppVersion }} was deployed as {{ include "redmine.fullname" . }}.
+
+Image: {{ include "redmine.image" . }}
+Database: {{ .Values.database.type }}
+Migration mode: {{ .Values.migrations.mode }}
+
+{{- if eq .Values.database.type "sqlite" }}
+SQLite is suitable for migration validation and light use, not multi-user production.
+{{- end }}
+
+Run the Helm test after the rollout:
+  helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }}

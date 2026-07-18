@@ -1,0 +1,21 @@
+ingress:
+  enabled: false
+
+gatewayAPI:
+  httpRoute:
+    enabled: true
+    parentRefs:
+      - name: public-gateway
+        namespace: gateway-system
+        sectionName: https
+    hostnames:
+      - redmine.example.com
+    rules:
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /
+        filters: []
+        timeouts:
+          request: 60s
+          backendRequest: 55s

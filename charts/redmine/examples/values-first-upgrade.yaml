@@ -1,0 +1,29 @@
+image:
+  tag: 6.1.3
+
+replicaCount: 1
+
+migrations:
+  mode: startup
+  plugins: false
+
+persistence:
+  files:
+    enabled: true
+    existingClaim: redmine-files
+  sqlite:
+    enabled: true
+    existingClaim: redmine-sqlite
+  config:
+    enabled: true
+    existingClaim: redmine-config
+    mounts:
+      - mountPath: /usr/src/redmine/config/configuration.yml
+        subPath: configuration.yml
+        readOnly: true
+  plugins:
+    enabled: false
+    existingClaim: redmine-plugins
+  public:
+    enabled: false
+    existingClaim: redmine-public

@@ -1,0 +1,23 @@
+annotations:
+  artifacthub.io/changes: |
+    - kind: changed
+      description: Renamed the chart to redmine
+    - kind: added
+      description: Added Gateway API HTTPRoute support
+  artifacthub.io/license: Apache-2.0
+apiVersion: v2
+appVersion: 6.1.3
+description: Standalone Helm chart for the official Redmine Docker image
+home: https://www.redmine.org/
+keywords:
+- redmine
+- project-management
+- issue-tracker
+kubeVersion: '>=1.23.0-0'
+name: redmine
+sources:
+- https://github.com/redmine/redmine
+- https://github.com/docker-library/redmine
+- https://github.com/techpipe-io/redmine-helm-chart
+type: application
+version: 0.2.0

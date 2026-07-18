@@ -1,0 +1,132 @@
+{{- if eq .Values.migrations.mode "job" }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "redmine.fullname" . }}-migrate
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redmine.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migration
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-10"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    {{- with .Values.migrations.job.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  backoffLimit: {{ .Values.migrations.job.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.migrations.job.activeDeadlineSeconds }}
+  ttlSecondsAfterFinished: {{ .Values.migrations.job.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "redmine.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migration
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- range . }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      {{- if and (ne .Values.database.type "sqlite") .Values.database.wait.enabled }}
+      initContainers:
+        - name: wait-for-database
+          image: {{ include "redmine.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - bash
+            - -ec
+          args:
+            - |
+              deadline=$((SECONDS + {{ .Values.database.wait.timeoutSeconds }}))
+              until (echo > "/dev/tcp/${DB_HOST}/${DB_PORT}") >/dev/null 2>&1; do
+                if (( SECONDS >= deadline )); then
+                  echo "Database wait timed out" >&2
+                  exit 1
+                fi
+                sleep 2
+              done
+          env:
+            - name: DB_HOST
+              value: {{ .Values.database.host | quote }}
+            - name: DB_PORT
+              value: {{ include "redmine.databasePort" . | quote }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+      {{- end }}
+      containers:
+        - name: migrate
+          image: {{ include "redmine.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - bundle
+          args:
+            - exec
+            - rake
+            - db:migrate
+            {{- if .Values.migrations.plugins }}
+            - redmine:plugins:migrate
+            {{- end }}
+          env:
+            {{- include "redmine.commonEnv" . | nindent 12 }}
+            - name: REDMINE_NO_DB_MIGRATE
+              value: "1"
+          {{- with .Values.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- if or (eq .Values.database.type "sqlite") .Values.migrations.plugins }}
+          volumeMounts:
+            {{- if eq .Values.database.type "sqlite" }}
+            {{- $sqlite := index .Values.persistence "sqlite" }}
+            {{- range $mount := $sqlite.mounts }}
+            - name: data-sqlite
+              mountPath: {{ $mount.mountPath }}
+              {{- with $mount.subPath }}
+              subPath: {{ . }}
+              {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.migrations.plugins }}
+            {{- $plugins := index .Values.persistence "plugins" }}
+            {{- range $mount := $plugins.mounts }}
+            - name: data-plugins
+              mountPath: {{ $mount.mountPath }}
+              {{- with $mount.subPath }}
+              subPath: {{ . }}
+              {{- end }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
+      {{- if or (eq .Values.database.type "sqlite") .Values.migrations.plugins }}
+      volumes:
+        {{- if eq .Values.database.type "sqlite" }}
+        {{- $sqlite := index .Values.persistence "sqlite" }}
+        - name: data-sqlite
+          persistentVolumeClaim:
+            claimName: {{ include "redmine.persistenceClaimName" (dict "root" . "name" "sqlite" "config" $sqlite) }}
+        {{- end }}
+        {{- if .Values.migrations.plugins }}
+        {{- $plugins := index .Values.persistence "plugins" }}
+        - name: data-plugins
+          persistentVolumeClaim:
+            claimName: {{ include "redmine.persistenceClaimName" (dict "root" . "name" "plugins" "config" $plugins) }}
+        {{- end }}
+      {{- end }}
+{{- end }}

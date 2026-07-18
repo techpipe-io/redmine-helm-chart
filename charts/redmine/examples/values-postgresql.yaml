@@ -1,0 +1,20 @@
+database:
+  type: postgresql
+  host: postgresql.database.svc.cluster.local
+  port: 5432
+  name: redmine
+  username: redmine
+  existingSecret: redmine-runtime
+  passwordKey: database-password
+
+persistence:
+  sqlite:
+    enabled: false
+  files:
+    enabled: true
+    create: false
+    existingClaim: redmine-files
+
+migrations:
+  mode: startup
+  plugins: false

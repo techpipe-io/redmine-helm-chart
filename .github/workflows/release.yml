@@ -1,0 +1,154 @@
+name: Release Helm chart
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Validate tag matches chart version
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          import pathlib
+          import yaml
+          tag = os.environ["GITHUB_REF_NAME"]
+          if tag.startswith("v"):
+              tag = tag[1:]
+          if not re.fullmatch(r"\d+\.\d+\.\d+", tag):
+              raise SystemExit(f"tag {tag!r} is not semver")
+          chart = yaml.safe_load(pathlib.Path("charts/redmine/Chart.yaml").read_text())
+          if chart["version"] != tag:
+              raise SystemExit(f"Chart.yaml version {chart['version']} does not match tag {tag}")
+          PY
+
+      - name: Helm lint
+        run: helm lint charts/redmine
+
+      - name: Helm render default
+        run: helm template smoke charts/redmine > /tmp/render-default.yaml
+
+      - name: Helm render ingress
+        run: helm template smoke charts/redmine --set ingress.enabled=true --set ingress.hosts[0].host=redmine.local > /tmp/render-ingress.yaml
+
+      - name: Helm render gateway api
+        run: helm template smoke charts/redmine --set gateway.enabled=true --set gateway.parentRefs[0].name=public --set gateway.hostnames[0]=redmine.local > /tmp/render-gateway.yaml
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.14.0
+
+      - name: Helm install smoke test
+        run: helm upgrade --install redmine charts/redmine --namespace redmine --create-namespace --wait --timeout 10m
+
+      - name: Helm test
+        run: helm test redmine --namespace redmine
+
+      - name: Configure Git
+        run: |
+          git config user.name "techpipe-io"
+          git config user.email "272725734+techpipe-io@users.noreply.github.com"
+
+      - name: Import signing key
+        shell: bash
+        env:
+          HELM_GPG_PRIVATE_KEY_B64: ${{ secrets.HELM_GPG_PRIVATE_KEY_B64 }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+          echo "$HELM_GPG_PRIVATE_KEY_B64" | base64 -d > /tmp/helm-signing-private.asc
+          gpg --batch --import /tmp/helm-signing-private.asc
+
+      - name: Export Helm keyrings
+        shell: bash
+        env:
+          HELM_GPG_PASSPHRASE: ${{ secrets.HELM_GPG_PASSPHRASE }}
+          HELM_GPG_KEY_UID: ${{ secrets.HELM_GPG_KEY_UID }}
+        run: |
+          set -euo pipefail
+          test -n "${HELM_GPG_PASSPHRASE:-}" || { echo "HELM_GPG_PASSPHRASE is empty"; exit 1; }
+          test -n "${HELM_GPG_KEY_UID:-}" || { echo "HELM_GPG_KEY_UID is empty"; exit 1; }
+      
+          printf '%s' "$HELM_GPG_PASSPHRASE" > /tmp/helm-passphrase
+          chmod 600 /tmp/helm-passphrase
+      
+          gpg --batch --yes \
+            --output ~/.gnupg/pubring.gpg \
+            --export "$HELM_GPG_KEY_UID"
+      
+          gpg --batch --yes \
+            --pinentry-mode loopback \
+            --passphrase-file /tmp/helm-passphrase \
+            --output ~/.gnupg/secring.gpg \
+            --export-secret-keys "$HELM_GPG_KEY_UID"
+
+      - name: Package and sign chart
+        shell: bash
+        env:
+          HELM_GPG_PASSPHRASE: ${{ secrets.HELM_GPG_PASSPHRASE }}
+          HELM_GPG_KEY_UID: ${{ secrets.HELM_GPG_KEY_UID }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cr-release-packages
+          printf '%s' "$HELM_GPG_PASSPHRASE" > /tmp/helm-passphrase
+          chmod 600 /tmp/helm-passphrase
+          helm dependency update charts/redmine
+          helm package charts/redmine \
+            --sign \
+            --key "$HELM_GPG_KEY_UID" \
+            --keyring ~/.gnupg/secring.gpg \
+            --passphrase-file /tmp/helm-passphrase \
+            --destination .cr-release-packages
+
+      - name: Verify signed chart locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          helm verify .cr-release-packages/redmine-*.tgz
+
+      - name: Publish chart repo
+        shell: bash
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+          REPO_OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+
+          git fetch origin gh-pages
+          rm -rf /tmp/gh-pages
+          git worktree add /tmp/gh-pages origin/gh-pages
+
+          cp .cr-release-packages/*.tgz /tmp/gh-pages/
+          cp .cr-release-packages/*.tgz.prov /tmp/gh-pages/
+
+          cd /tmp/gh-pages
+
+          helm repo index . \
+            --url "https://${REPO_OWNER}.github.io/${REPO_NAME}" \
+            --merge index.yaml
+
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+          git add index.yaml ./*.tgz ./*.prov
+          git diff --cached --quiet || git commit -m "Publish chart artifacts for ${GITHUB_REF_NAME}"
+          git push origin HEAD:gh-pages
+

@@ -1,0 +1,33 @@
+{{- range $name, $config := .Values.persistence }}
+{{- if and $config.enabled $config.create (not $config.existingClaim) }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "redmine.persistenceClaimName" (dict "root" $ "name" $name "config" $config) }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "redmine.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+  {{- if or $config.retain $config.annotations }}
+  annotations:
+    {{- if $config.retain }}
+    helm.sh/resource-policy: keep
+    {{- end }}
+    {{- with $config.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- toYaml $config.accessModes | nindent 4 }}
+  {{- if eq $config.storageClass "-" }}
+  storageClassName: ""
+  {{- else if $config.storageClass }}
+  storageClassName: {{ $config.storageClass | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ $config.size }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "redmine values",
+  "type": "object",
+  "properties": {
+    "image": {
+      "type": "object",
+      "required": ["repository", "tag", "pullPolicy"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "tag": {"type": "string", "minLength": 1},
+        "digest": {"type": "string"},
+        "pullPolicy": {"type": "string", "enum": ["Always", "IfNotPresent", "Never"]},
+        "pullSecrets": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "replicaCount": {"type": "integer", "minimum": 0},
+    "migrations": {
+      "type": "object",
+      "required": ["mode", "plugins"],
+      "properties": {
+        "mode": {"type": "string", "enum": ["startup", "job", "disabled"]},
+        "plugins": {"type": "boolean"},
+        "job": {"type": "object"}
+      }
+    },
+    "database": {
+      "type": "object",
+      "required": ["type", "name", "username", "existingSecret", "passwordKey"],
+      "properties": {
+        "type": {"type": "string", "enum": ["sqlite", "postgresql", "mysql", "sqlserver"]},
+        "host": {"type": "string"},
+        "port": {"type": ["string", "integer"]},
+        "name": {"type": "string"},
+        "username": {"type": "string"},
+        "encoding": {"type": "string"},
+        "existingSecret": {"type": "string"},
+        "passwordKey": {"type": "string"},
+        "wait": {"type": "object"}
+      }
+    },
+    "secretKeyBase": {
+      "type": "object",
+      "required": ["existingSecret", "key"],
+      "properties": {
+        "existingSecret": {"type": "string", "minLength": 1},
+        "key": {"type": "string", "minLength": 1}
+      }
+    },
+    "persistence": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["enabled", "create", "existingClaim", "mounts"],
+        "properties": {
+          "enabled": {"type": "boolean"},
+          "create": {"type": "boolean"},
+          "retain": {"type": "boolean"},
+          "existingClaim": {"type": "string"},
+          "accessModes": {"type": "array", "items": {"type": "string"}},
+          "size": {"type": "string"},
+          "storageClass": {"type": "string"},
+          "annotations": {"type": "object"},
+          "mounts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["mountPath"],
+              "properties": {
+                "mountPath": {"type": "string", "minLength": 1},
+                "subPath": {"type": "string"},
+                "readOnly": {"type": "boolean"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "autoscaling": {"type": "object"},
+    "gatewayAPI": {
+      "type": "object",
+      "required": ["httpRoute"],
+      "properties": {
+        "httpRoute": {
+          "type": "object",
+          "required": ["enabled", "parentRefs", "hostnames", "rules"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "annotations": {"type": "object"},
+            "labels": {"type": "object"},
+            "parentRefs": {"type": "array", "items": {"type": "object"}},
+            "hostnames": {"type": "array", "items": {"type": "string"}},
+            "rules": {"type": "array", "items": {"type": "object"}}
+          }
+        }
+      }
+    },
+    "mailReceiver": {
+      "type": "object",
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "protocol": {"type": "string", "enum": ["IMAP", "POP3"]}
+      }
+    },
+    "diagnosticMode": {"type": "object"}
+  },
+  "required": ["image", "replicaCount", "migrations", "database", "secretKeyBase", "persistence"]
+}

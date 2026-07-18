@@ -1,0 +1,19 @@
+project: redmine
+version: 0.42.3
+
+releases:
+  - name: redmine
+    namespace: redmine
+    create_namespace: true
+    chart:
+      name: ./redmine
+    values:
+      - src: ./values.override.yaml
+        render: false
+        strict: true
+    wait: true
+    wait_for_jobs: true
+    timeout: 15m
+    max_history: 3
+    atomic: false
+    cleanup_on_fail: false
