@@ -1,4 +1,5 @@
 {{- if eq .Values.migrations.mode "job" }}
+{{- $sqlitePersistence := and (eq .Values.database.type "sqlite") (index .Values.persistence "sqlite").enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -91,9 +92,9 @@ spec:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- if or (eq .Values.database.type "sqlite") .Values.migrations.plugins }}
+          {{- if or $sqlitePersistence .Values.migrations.plugins }}
           volumeMounts:
-            {{- if eq .Values.database.type "sqlite" }}
+            {{- if $sqlitePersistence }}
             {{- $sqlite := index .Values.persistence "sqlite" }}
             {{- range $mount := $sqlite.mounts }}
             - name: data-sqlite
@@ -114,9 +115,9 @@ spec:
             {{- end }}
             {{- end }}
           {{- end }}
-      {{- if or (eq .Values.database.type "sqlite") .Values.migrations.plugins }}
+      {{- if or $sqlitePersistence .Values.migrations.plugins }}
       volumes:
-        {{- if eq .Values.database.type "sqlite" }}
+        {{- if $sqlitePersistence }}
         {{- $sqlite := index .Values.persistence "sqlite" }}
         - name: data-sqlite
           persistentVolumeClaim:

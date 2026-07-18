@@ -1,5 +1,5 @@
 image:
-  tag: 6.1.3
+  tag: 6.1.3-bookworm
 
 replicaCount: 1
 
@@ -7,15 +7,22 @@ migrations:
   mode: startup
   plugins: false
 
+secretKeyBase:
+  existingSecret: redmine-runtime
+  key: secret-key-base
+
 persistence:
   files:
     enabled: true
+    create: false
     existingClaim: redmine-files
   sqlite:
     enabled: true
+    create: false
     existingClaim: redmine-sqlite
   config:
     enabled: true
+    create: false
     existingClaim: redmine-config
     mounts:
       - mountPath: /usr/src/redmine/config/configuration.yml
@@ -23,7 +30,9 @@ persistence:
         readOnly: true
   plugins:
     enabled: false
+    create: false
     existingClaim: redmine-plugins
   public:
     enabled: false
+    create: false
     existingClaim: redmine-public

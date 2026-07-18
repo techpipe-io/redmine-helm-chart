@@ -177,13 +177,17 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          {{- with (include "redmine.volumeMounts" .) }}
           volumeMounts:
-            {{- include "redmine.volumeMounts" . | nindent 12 }}
+            {{- . | nindent 12 }}
+          {{- end }}
         {{- with .Values.sidecars }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+      {{- with (include "redmine.volumes" .) }}
       volumes:
-        {{- include "redmine.volumes" . | nindent 8 }}
+        {{- . | nindent 8 }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

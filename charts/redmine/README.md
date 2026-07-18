@@ -22,9 +22,43 @@ The chart features:
 Database migrations use the official image entrypoint and its documented
 `REDMINE_NO_DB_MIGRATE` and `REDMINE_PLUGINS_MIGRATE` controls.
 
-## Required Secret
+## Minimal installation
 
-Create one stable Secret and preserve it across every upgrade:
+Default values create two 1 Gi PVCs for attachments and SQLite, skip custom
+configuration/plugins/themes, and create a stable release-managed
+`SECRET_KEY_BASE` Secret. A default `StorageClass` is the only cluster-side
+requirement.
+
+```bash
+helm upgrade --install redmine ./redmine \
+  --namespace redmine \
+  --create-namespace \
+  --wait \
+  --timeout 10m
+```
+
+For an ephemeral CI smoke test on a cluster without a dynamic volume
+provisioner, disable both PVC mounts:
+
+```bash
+helm upgrade --install redmine ./redmine \
+  --namespace redmine \
+  --create-namespace \
+  --wait \
+  --timeout 10m \
+  --set persistence.files.enabled=false \
+  --set persistence.sqlite.enabled=false
+```
+
+The second form loses the SQLite database and attachments when the Pod is
+recreated and must not be used for a real installation.
+
+## Secret management
+
+When `secretKeyBase.existingSecret` is empty, the chart creates the Secret and
+uses `lookup` to preserve its value across Helm upgrades. For migration or
+production, an externally managed stable Secret can be supplied instead:
+
 
 ```bash
 kubectl -n redmine create secret generic redmine-runtime \
@@ -32,11 +66,17 @@ kubectl -n redmine create secret generic redmine-runtime \
   --from-literal=database-password='replace-if-an-external-database-is-used'
 ```
 
+```yaml
+secretKeyBase:
+  existingSecret: redmine-runtime
+  key: secret-key-base
+```
+
 Changing `secret-key-base` invalidates existing sessions.
 
 ## Existing Docker volumes
 
-The defaults refer to these existing PVCs:
+Use `examples/values-first-upgrade.yaml` to attach these existing PVCs:
 
 | Source volume | PVC | Mount in Redmine 6.1.3 |
 |---|---|---|

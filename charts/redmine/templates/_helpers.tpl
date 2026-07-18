@@ -38,6 +38,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 {{- end -}}
 
+{{- define "redmine.secretKeyBaseSecretName" -}}
+{{- default (include "redmine.fullname" .) .Values.secretKeyBase.existingSecret -}}
+{{- end -}}
+
 {{- define "redmine.image" -}}
 {{- if .Values.image.digest -}}
 {{- printf "%s@%s" .Values.image.repository .Values.image.digest -}}
@@ -97,7 +101,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 - name: SECRET_KEY_BASE
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.secretKeyBase.existingSecret }}
+      name: {{ include "redmine.secretKeyBaseSecretName" . }}
       key: {{ .Values.secretKeyBase.key }}
 {{ include "redmine.databaseEnv" . }}
 {{- with .Values.extraEnv }}
@@ -145,9 +149,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if not (has .Values.migrations.mode $migrationModes) -}}
 {{- fail "migrations.mode must be one of: startup, job, disabled" -}}
 {{- end -}}
-{{- if not .Values.secretKeyBase.existingSecret -}}
-{{- fail "secretKeyBase.existingSecret is required; reuse the same secret across upgrades" -}}
-{{- end -}}
 {{- if not .Values.secretKeyBase.key -}}
 {{- fail "secretKeyBase.key is required" -}}
 {{- end -}}
@@ -157,9 +158,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
   {{- end -}}
   {{- if .Values.autoscaling.enabled -}}
   {{- fail "SQLite cannot be used with autoscaling" -}}
-  {{- end -}}
-  {{- if not (index .Values.persistence "sqlite").enabled -}}
-  {{- fail "SQLite requires persistence.sqlite.enabled=true" -}}
   {{- end -}}
   {{- if .Values.mailReceiver.enabled -}}
   {{- fail "mailReceiver requires an external database; concurrent SQLite access from another Pod is unsafe" -}}
@@ -181,7 +179,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if and .Values.migrations.plugins (not (index .Values.persistence "plugins").enabled) -}}
 {{- fail "migrations.plugins=true requires persistence.plugins.enabled=true" -}}
 {{- end -}}
-{{- if and (eq .Values.migrations.mode "job") (eq .Values.database.type "sqlite") (index .Values.persistence "sqlite").create -}}
+{{- if and (eq .Values.migrations.mode "job") (eq .Values.database.type "sqlite") (index .Values.persistence "sqlite").enabled (index .Values.persistence "sqlite").create -}}
 {{- fail "SQLite migration Job requires an existing PVC because pre-install hooks run before chart-created PVCs" -}}
 {{- end -}}
 {{- if and .Values.mailReceiver.enabled (not .Values.mailReceiver.existingSecret) -}}

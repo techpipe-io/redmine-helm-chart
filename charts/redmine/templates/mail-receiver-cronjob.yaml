@@ -91,8 +91,12 @@ spec:
                 {{- toYaml .Values.containerSecurityContext | nindent 16 }}
               resources:
                 {{- toYaml .Values.mailReceiver.resources | nindent 16 }}
+              {{- with (include "redmine.volumeMounts" .) }}
               volumeMounts:
-                {{- include "redmine.volumeMounts" . | nindent 16 }}
+                {{- . | nindent 16 }}
+              {{- end }}
+          {{- with (include "redmine.volumes" .) }}
           volumes:
-            {{- include "redmine.volumes" . | nindent 12 }}
+            {{- . | nindent 12 }}
+          {{- end }}
 {{- end }}

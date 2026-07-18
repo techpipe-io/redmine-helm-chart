@@ -4,6 +4,10 @@ annotations:
       description: Renamed the chart to redmine
     - kind: added
       description: Added Gateway API HTTPRoute support
+    - kind: added
+      description: Added a stable chart-managed SECRET_KEY_BASE for minimal installs
+    - kind: changed
+      description: Default SQLite installation now creates its own files and database PVCs
   artifacthub.io/license: Apache-2.0
 apiVersion: v2
 appVersion: 6.1.3
@@ -20,4 +24,4 @@ sources:
 - https://github.com/docker-library/redmine
 - https://github.com/techpipe-io/redmine-helm-chart
 type: application
-version: 0.2.0
+version: 0.2.1

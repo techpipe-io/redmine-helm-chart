@@ -3,7 +3,7 @@ fullnameOverride: ""
 
 image:
   repository: redmine
-  tag: 6.1.3
+  tag: 6.1.3-bookworm
   digest: ""
   pullPolicy: IfNotPresent
   pullSecrets: []
@@ -40,8 +40,10 @@ database:
     timeoutSeconds: 300
 
 secretKeyBase:
-  existingSecret: redmine-runtime
+  # Leave empty to create and preserve a release-managed Secret.
+  existingSecret: ""
   key: secret-key-base
+  annotations: {}
 
 serviceAccount:
   create: true
@@ -134,17 +136,17 @@ probes:
     failureThreshold: 6
     successThreshold: 1
 
-# Existing claims match the source Docker volumes. Only user-owned paths are
-# mounted; replacing the complete config or public directories is rejected.
+# The defaults create a minimal persistent SQLite installation. Use
+# existingClaim to attach migrated Docker volumes.
 persistence:
   files:
     enabled: true
-    create: false
+    create: true
     retain: true
-    existingClaim: redmine-files
+    existingClaim: ""
     accessModes:
       - ReadWriteOnce
-    size: 10Gi
+    size: 1Gi
     storageClass: ""
     annotations: {}
     mounts:
@@ -152,22 +154,22 @@ persistence:
         readOnly: false
   sqlite:
     enabled: true
-    create: false
+    create: true
     retain: true
-    existingClaim: redmine-sqlite
+    existingClaim: ""
     accessModes:
       - ReadWriteOnce
-    size: 2Gi
+    size: 1Gi
     storageClass: ""
     annotations: {}
     mounts:
       - mountPath: /usr/src/redmine/sqlite
         readOnly: false
   config:
-    enabled: true
+    enabled: false
     create: false
     retain: true
-    existingClaim: redmine-config
+    existingClaim: ""
     accessModes:
       - ReadWriteOnce
     size: 1Gi
@@ -182,7 +184,7 @@ persistence:
     enabled: false
     create: false
     retain: true
-    existingClaim: redmine-plugins
+    existingClaim: ""
     accessModes:
       - ReadWriteOnce
     size: 2Gi
@@ -196,7 +198,7 @@ persistence:
     enabled: false
     create: false
     retain: true
-    existingClaim: redmine-public
+    existingClaim: ""
     accessModes:
       - ReadWriteOnce
     size: 1Gi
