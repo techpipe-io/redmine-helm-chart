@@ -1,0 +1,42 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+annotations:
+  artifacthub.io/changes: |
+    - kind: changed
+      description: Renamed the chart to redmine
+    - kind: added
+      description: Added Gateway API HTTPRoute support
+    - kind: added
+      description: Added a stable chart-managed SECRET_KEY_BASE for minimal installs
+    - kind: changed
+      description: Default SQLite installation now creates its own files and database PVCs
+  artifacthub.io/license: Apache-2.0
+apiVersion: v2
+appVersion: 6.1.3
+description: Standalone Helm chart for the official Redmine Docker image
+home: https://www.redmine.org/
+keywords:
+- - redmine
+- - project-management
+- - issue-tracker
+kubeVersion: '>=1.23.0-0'
+name: redmine
+sources:
+- - https://github.com/redmine/redmine
+- - https://github.com/docker-library/redmine
+- - https://github.com/techpipe-io/redmine-helm-chart
+type: application
+version: 0.2.1
+
+...
+files:
+  redmine-0.2.1.tgz: sha256:3b1152e2960c9b66a42ad657815a794ed5550da6611af4c208a8d69d36047ad1
+
+-----BEGIN PGP SIGNATURE-----
+
+wrsEARYKAG0Fgmpb5OgJEBcbE75G7/Z4RRQAAAAAABwAIHNhbHRAbm90YXRpb25z
+Lm9wZW5wZ3Bqcy5vcmeT09EnD2WquF1dFx5nP33COEwuTFcnMoCjczYxA1eo1xYh
+BHZRcXMlrTt8RU86zBcbE75G7/Z4AADZIAD/YQdv21tQyZTSU/sZhdhu/Y+sw+F5
+PpnVh/Z9yqmZfQwA/1ALmfmESeEVw1ge3R5P1CJpBWqNjNzia7K6NwQU1jUA
+-----END PGP SIGNATURE-----
