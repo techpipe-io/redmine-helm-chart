@@ -30,6 +30,10 @@ configuration/plugins/themes, and create a stable release-managed
 requirement.
 
 ```bash
+
+helm repo add searxng https://techpipe-io.github.io/redmine-helm-chart
+helm repo update
+
 helm upgrade --install redmine ./redmine \
   --namespace redmine \
   --create-namespace \
@@ -52,6 +56,38 @@ helm upgrade --install redmine ./redmine \
 
 The second form loses the SQLite database and attachments when the Pod is
 recreated and must not be used for a real installation.
+
+Install with an override file:
+
+```bash
+helm upgrade --install redmine ./redmine \
+  --namespace redmine \
+  --create-namespace \
+  --wait \
+  -f ./redmine/examples/values-first-upgrade.yaml \
+  --timeout 10m
+```
+
+### Install with Helmwave
+
+Copy [`examples/helmwave.yml`](examples/helmwave.yml) beside the chart and place your overrides in
+`values.override.yaml`. The first major upgrade example intentionally disables
+atomic cleanup because database changes are outside Helm rollback.
+
+```bash
+helmwave build
+helmwave up
+```
+
+After a successful migration, use the regular release policy:
+
+```yaml
+atomic: true
+cleanup_on_fail: true
+wait: true
+wait_for_jobs: true
+timeout: 15m
+```
 
 ## Secret management
 
@@ -137,27 +173,6 @@ SQLite as unsuitable for multi-user production.
 The upstream upgrade guide requires a database and attachment backup, copying
 only user configuration/customizations into the new release, and running core
 and plugin migrations. It explicitly warns not to overwrite core settings files.
-
-## Helmwave
-
-Copy `examples/helmwave.yml` beside the chart and place your overrides in
-`values.override.yaml`. The first major upgrade example intentionally disables
-atomic cleanup because database changes are outside Helm rollback.
-
-```bash
-helmwave build
-helmwave up
-```
-
-After a successful migration, use the regular release policy:
-
-```yaml
-atomic: true
-cleanup_on_fail: true
-wait: true
-wait_for_jobs: true
-timeout: 15m
-```
 
 ## Gateway API
 

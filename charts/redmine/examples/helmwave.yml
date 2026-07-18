@@ -1,6 +1,10 @@
 project: redmine
 version: 0.42.3
 
+repositories:
+  - name: redmine
+    url: https://techpipe-io.github.io/redmine-helm-chart
+
 releases:
   - name: redmine
     namespace: redmine
@@ -8,7 +12,7 @@ releases:
     chart:
       name: ./redmine
     values:
-      - src: ./values.override.yaml
+      - src: ./redmine/values.override.yaml
         render: false
         strict: true
     wait: true

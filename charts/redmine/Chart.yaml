@@ -9,10 +9,13 @@ annotations:
     - kind: changed
       description: Default SQLite installation now creates its own files and database PVCs
   artifacthub.io/license: Apache-2.0
+  artifacthub.io/alternativeName: redmine
+  artifacthub.io/category: Integration and delivery
 apiVersion: v2
 appVersion: 6.1.3
 description: Standalone Helm chart for the official Redmine Docker image
-home: https://www.redmine.org/
+home: https://github.com/techpipe-io/redmine-helm-chart
+icon: https://www.redmine.org/attachments/3462/redmine_fluid_icon.png
 keywords:
 - redmine
 - project-management
