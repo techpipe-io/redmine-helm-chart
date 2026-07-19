@@ -1,0 +1,56 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+annotations:
+  artifacthub.io/alternativeName: redmine
+  artifacthub.io/category: Integration and delivery
+  artifacthub.io/changes: |
+    - kind: fixed
+      description: Prepare configuration.yml before mounting it as a file subPath
+    - kind: changed
+      description: Renamed the chart to redmine
+    - kind: added
+      description: Added Gateway API HTTPRoute support
+    - kind: added
+      description: Added a stable chart-managed SECRET_KEY_BASE for minimal installs
+    - kind: changed
+      description: Default SQLite installation now creates its own files and database PVCs
+    - kind: changed
+      description: Changed images to 6.1.3-trixie
+    - kind: added
+      description: Added arbitrary environment variables and Kubernetes volumes through values
+    - kind: added
+      description: Added a writable EmptyDir at /var/tmp/redmine by default
+  artifacthub.io/images: |
+    - name: redmine
+      image: docker.io/library/redmine:6.1.0-trixie
+  artifacthub.io/license: Apache-2.0
+apiVersion: v2
+appVersion: 6.1.3
+description: Standalone Helm chart for the official Redmine Docker image
+home: https://github.com/techpipe-io/redmine-helm-chart
+icon: https://www.redmine.org/attachments/download/3462/redmine_fluid_icon.png
+keywords:
+- - redmine
+- - project-management
+- - issue-tracker
+kubeVersion: '>=1.23.0-0'
+name: redmine
+sources:
+- - https://github.com/redmine/redmine
+- - https://github.com/docker-library/redmine
+- - https://github.com/techpipe-io/redmine-helm-chart
+type: application
+version: 0.2.4
+
+...
+files:
+  redmine-0.2.4.tgz: sha256:b58c1f829c1599c3af5efd42b81baf48e76454c33a64deee9840250f1c1833de
+
+-----BEGIN PGP SIGNATURE-----
+
+wrsEARYKAG0Fgmpc16gJEBcbE75G7/Z4RRQAAAAAABwAIHNhbHRAbm90YXRpb25z
+Lm9wZW5wZ3Bqcy5vcmeHqPuPyQxr1fN2C5lMvYKnOzdDqFc4+WriLTeSRXKgFRYh
+BHZRcXMlrTt8RU86zBcbE75G7/Z4AABHEAD/dDx9V2jnUNpZfTAQRrafqmhSXcyp
+xFWX/MnnCL8fgekA/0rislZf8vSAd7Mpx1FKNI8lk8t6K73PsFOQOizL7soE
+-----END PGP SIGNATURE-----

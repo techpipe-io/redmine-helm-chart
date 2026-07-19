@@ -5,6 +5,8 @@ entries:
       artifacthub.io/alternativeName: redmine
       artifacthub.io/category: Integration and delivery
       artifacthub.io/changes: |
+        - kind: fixed
+          description: Prepare configuration.yml before mounting it as a file subPath
         - kind: changed
           description: Renamed the chart to redmine
         - kind: added
@@ -25,7 +27,50 @@ entries:
       artifacthub.io/license: Apache-2.0
     apiVersion: v2
     appVersion: 6.1.3
-    created: "2026-07-19T11:09:15.757960596Z"
+    created: "2026-07-19T13:56:56.407951786Z"
+    description: Standalone Helm chart for the official Redmine Docker image
+    digest: b58c1f829c1599c3af5efd42b81baf48e76454c33a64deee9840250f1c1833de
+    home: https://github.com/techpipe-io/redmine-helm-chart
+    icon: https://www.redmine.org/attachments/download/3462/redmine_fluid_icon.png
+    keywords:
+    - redmine
+    - project-management
+    - issue-tracker
+    kubeVersion: '>=1.23.0-0'
+    name: redmine
+    sources:
+    - https://github.com/redmine/redmine
+    - https://github.com/docker-library/redmine
+    - https://github.com/techpipe-io/redmine-helm-chart
+    type: application
+    urls:
+    - https://techpipe-io.github.io/redmine-helm-chart/redmine-0.2.4.tgz
+    version: 0.2.4
+  - annotations:
+      artifacthub.io/alternativeName: redmine
+      artifacthub.io/category: Integration and delivery
+      artifacthub.io/changes: |
+        - kind: changed
+          description: Renamed the chart to redmine
+        - kind: added
+          description: Added Gateway API HTTPRoute support
+        - kind: added
+          description: Added a stable chart-managed SECRET_KEY_BASE for minimal installs
+        - kind: changed
+          description: Default SQLite installation now creates its own files and database PVCs
+        - kind: changed
+          description: Changed images to 6.1.3-trixie
+        - kind: added
+          description: Added arbitrary environment variables and Kubernetes volumes through values
+        - kind: added
+          description: Added a writable EmptyDir at /var/tmp/redmine by default
+      artifacthub.io/images: |
+        - name: redmine
+          image: docker.io/library/redmine:6.1.0-trixie
+      artifacthub.io/license: Apache-2.0
+    apiVersion: v2
+    appVersion: 6.1.3
+    created: "2026-07-19T13:56:56.406680903Z"
     description: Standalone Helm chart for the official Redmine Docker image
     digest: 00834e3889c74c5541fa86ba3383b8702d194b5919100a40d9c19fd396d1296c
     home: https://github.com/techpipe-io/redmine-helm-chart
@@ -64,7 +109,7 @@ entries:
       artifacthub.io/license: Apache-2.0
     apiVersion: v2
     appVersion: 6.1.3
-    created: "2026-07-19T11:09:15.75678292Z"
+    created: "2026-07-19T13:56:56.405437932Z"
     description: Standalone Helm chart for the official Redmine Docker image
     digest: 5bb94258d3738c4552e2c308147d9f38296a4f41915a6d4afd4c651be7c22346
     home: https://github.com/techpipe-io/redmine-helm-chart
@@ -96,7 +141,7 @@ entries:
       artifacthub.io/license: Apache-2.0
     apiVersion: v2
     appVersion: 6.1.3
-    created: "2026-07-19T11:09:15.755499917Z"
+    created: "2026-07-19T13:56:56.404256472Z"
     description: Standalone Helm chart for the official Redmine Docker image
     digest: 3b1152e2960c9b66a42ad657815a794ed5550da6611af4c208a8d69d36047ad1
     home: https://www.redmine.org/
@@ -114,4 +159,4 @@ entries:
     urls:
     - https://techpipe-io.github.io/redmine-helm-chart/redmine-0.2.1.tgz
     version: 0.2.1
-generated: "2026-07-19T11:09:15.75400647Z"
+generated: "2026-07-19T13:56:56.402816307Z"
