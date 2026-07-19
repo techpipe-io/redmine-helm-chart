@@ -211,7 +211,7 @@ persistence:
     create: false
     existingClaim: redmine-public
     mounts:
-      - mountPath: /usr/src/redmine/public/themes/my-theme
+      - mountPath: /usr/src/redmine/themes/my-theme
         subPath: themes/my-theme
         readOnly: true
 ```

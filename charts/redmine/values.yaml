@@ -221,7 +221,7 @@ persistence:
     storageClass: ""
     annotations: {}
     mounts:
-      - mountPath: /usr/src/redmine/public/themes/techpipe
+      - mountPath: /usr/src/redmine/themes/techpipe
         subPath: techpipe
         readOnly: true
 
