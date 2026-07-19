@@ -35,8 +35,9 @@ spec:
         - name: {{ . }}
         {{- end }}
       {{- end }}
-      {{- if and (ne .Values.database.type "sqlite") .Values.database.wait.enabled }}
+      {{- if or (and (ne .Values.database.type "sqlite") .Values.database.wait.enabled) .Values.tmpDir.enabled }}
       initContainers:
+        {{- if and (ne .Values.database.type "sqlite") .Values.database.wait.enabled }}
         - name: wait-for-database
           image: {{ include "redmine.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -66,6 +67,10 @@ spec:
               memory: 32Mi
             limits:
               memory: 64Mi
+        {{- end }}
+        {{- if .Values.tmpDir.enabled }}
+        {{- include "redmine.prepareTmpContainer" . | nindent 8 }}
+        {{- end }}
       {{- end }}
       containers:
         - name: migrate

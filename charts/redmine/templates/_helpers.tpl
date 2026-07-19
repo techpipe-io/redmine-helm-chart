@@ -128,6 +128,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Values.tmpDir.enabled }}
 - name: redmine-tmp
   mountPath: {{ .Values.tmpDir.mountPath }}
+  subPath: redmine
 {{- end }}
 {{- with .Values.extraVolumeMounts }}
 {{ toYaml . }}
@@ -192,6 +193,30 @@ app.kubernetes.io/instance: {{ .Release.Name }}
   volumeMounts:
     - name: data-config
       mountPath: /mnt/config
+{{- end -}}
+
+{{- define "redmine.prepareTmpContainer" -}}
+- name: prepare-tmp
+  image: {{ include "redmine.image" . }}
+  imagePullPolicy: {{ .Values.image.pullPolicy }}
+  command:
+    - bash
+    - -ec
+  args:
+    - |
+      mkdir -p /mnt/redmine-tmp/redmine
+      chmod {{ default "0700" .Values.tmpDir.mode | quote }} /mnt/redmine-tmp/redmine
+  securityContext:
+    {{- toYaml .Values.containerSecurityContext | nindent 4 }}
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    limits:
+      memory: 32Mi
+  volumeMounts:
+    - name: redmine-tmp
+      mountPath: /mnt/redmine-tmp
 {{- end -}}
 
 {{- define "redmine.validate" -}}

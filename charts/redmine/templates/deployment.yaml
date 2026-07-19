@@ -43,7 +43,7 @@ spec:
         - name: {{ . }}
         {{- end }}
       {{- end }}
-      {{- if or (and (ne .Values.database.type "sqlite") .Values.database.wait.enabled) .Values.volumePermissions.enabled $prepareConfigurationFile .Values.extraInitContainers }}
+      {{- if or (and (ne .Values.database.type "sqlite") .Values.database.wait.enabled) .Values.volumePermissions.enabled $prepareConfigurationFile .Values.tmpDir.enabled .Values.extraInitContainers }}
       initContainers:
         {{- if and (ne .Values.database.type "sqlite") .Values.database.wait.enabled }}
         - name: wait-for-database
@@ -113,6 +113,9 @@ spec:
         {{- end }}
         {{- if $prepareConfigurationFile }}
         {{- include "redmine.prepareConfigurationContainer" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.tmpDir.enabled }}
+        {{- include "redmine.prepareTmpContainer" . | nindent 8 }}
         {{- end }}
         {{- with .Values.extraInitContainers }}
         {{- toYaml . | nindent 8 }}

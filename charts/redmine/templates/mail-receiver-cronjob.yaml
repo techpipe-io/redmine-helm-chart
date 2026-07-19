@@ -36,9 +36,14 @@ spec:
             - name: {{ . }}
             {{- end }}
           {{- end }}
-          {{- if $prepareConfigurationFile }}
+          {{- if or $prepareConfigurationFile .Values.tmpDir.enabled }}
           initContainers:
+            {{- if $prepareConfigurationFile }}
             {{- include "redmine.prepareConfigurationContainer" . | nindent 12 }}
+            {{- end }}
+            {{- if .Values.tmpDir.enabled }}
+            {{- include "redmine.prepareTmpContainer" . | nindent 12 }}
+            {{- end }}
           {{- end }}
           containers:
             - name: mail-receiver

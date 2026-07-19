@@ -298,6 +298,7 @@ env:
 tmpDir:
   enabled: true
   mountPath: /var/tmp/redmine
+  mode: "0700"
   emptyDir: {}
 
 # Full Kubernetes EnvVar, EnvFromSource, Volume, and VolumeMount entries.

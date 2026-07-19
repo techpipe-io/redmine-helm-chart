@@ -1,21 +1,7 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: Prepare configuration.yml before mounting it as a file subPath
-    - kind: changed
-      description: Renamed the chart to redmine
     - kind: added
-      description: Added Gateway API HTTPRoute support
-    - kind: added
-      description: Added a stable chart-managed SECRET_KEY_BASE for minimal installs
-    - kind: changed
-      description: Default SQLite installation now creates its own files and database PVCs
-    - kind: changed
-      description: Changed images to 6.1.3-trixie
-    - kind: added
-      description: Added arbitrary environment variables and Kubernetes volumes through values
-    - kind: added
-      description: Added a writable EmptyDir at /var/tmp/redmine by default
+      description: Prepare a private TMPDIR subdirectory before Redmine starts
   artifacthub.io/license: Apache-2.0
   artifacthub.io/alternativeName: redmine
   artifacthub.io/category: integration-delivery
@@ -38,4 +24,4 @@ sources:
 - https://github.com/docker-library/redmine
 - https://github.com/techpipe-io/redmine-helm-chart
 type: application
-version: 0.2.4
+version: 0.2.5

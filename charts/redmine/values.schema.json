@@ -115,6 +115,7 @@
       "properties": {
         "enabled": {"type": "boolean"},
         "mountPath": {"type": "string", "minLength": 1},
+        "mode": {"type": "string", "pattern": "^[0-7]{3,4}$"},
         "emptyDir": {"type": "object"}
       }
     },
