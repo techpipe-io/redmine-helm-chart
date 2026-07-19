@@ -1,6 +1,6 @@
 # redmine-helm-chart
 
-Standalone Helm chart for the official `redmine:6.1.3-bookworm` image. It has no
+Standalone Helm chart for the official `library/redmine:6.1.3-trixie`  or `library/redmine:6.0.10-bookworm` images. It has no
 any dependencies on any subcharts common-libraries.
 
 ## Design

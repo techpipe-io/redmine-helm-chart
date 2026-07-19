@@ -3,7 +3,7 @@ fullnameOverride: ""
 
 image:
   repository: redmine
-  tag: 6.1.3-bookworm
+  tag: 6.1.3-trixie
   digest: ""
   pullPolicy: IfNotPresent
   pullSecrets: []

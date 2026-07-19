@@ -8,9 +8,14 @@ annotations:
       description: Added a stable chart-managed SECRET_KEY_BASE for minimal installs
     - kind: changed
       description: Default SQLite installation now creates its own files and database PVCs
+    - kind: changed
+      description: Changed images to 6.1.3-trixie
   artifacthub.io/license: Apache-2.0
   artifacthub.io/alternativeName: redmine
   artifacthub.io/category: Integration and delivery
+  artifacthub.io/images: |
+    - name: redmine
+      image: docker.io/library/redmine:6.1.0-trixie
 apiVersion: v2
 appVersion: 6.1.3
 description: Standalone Helm chart for the official Redmine Docker image
@@ -27,4 +32,4 @@ sources:
 - https://github.com/docker-library/redmine
 - https://github.com/techpipe-io/redmine-helm-chart
 type: application
-version: 0.2.1
+version: 0.2.2
