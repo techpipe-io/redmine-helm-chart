@@ -104,7 +104,32 @@ app.kubernetes.io/instance: {{ .Release.Name }}
       name: {{ include "redmine.secretKeyBaseSecretName" . }}
       key: {{ .Values.secretKeyBase.key }}
 {{ include "redmine.databaseEnv" . }}
+{{- range $name, $value := .Values.env }}
+- name: {{ $name }}
+  value: {{ $value | quote }}
+{{- end }}
 {{- with .Values.extraEnv }}
+{{ toYaml . }}
+{{- end }}
+{{- end -}}
+
+{{- define "redmine.runtimeVolumes" -}}
+{{- if .Values.tmpDir.enabled }}
+- name: redmine-tmp
+  emptyDir:
+    {{- toYaml .Values.tmpDir.emptyDir | nindent 4 }}
+{{- end }}
+{{- with .Values.extraVolumes }}
+{{ toYaml . }}
+{{- end }}
+{{- end -}}
+
+{{- define "redmine.runtimeVolumeMounts" -}}
+{{- if .Values.tmpDir.enabled }}
+- name: redmine-tmp
+  mountPath: {{ .Values.tmpDir.mountPath }}
+{{- end }}
+{{- with .Values.extraVolumeMounts }}
 {{ toYaml . }}
 {{- end }}
 {{- end -}}
@@ -117,9 +142,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
     claimName: {{ include "redmine.persistenceClaimName" (dict "root" $ "name" $name "config" $config) }}
 {{- end }}
 {{- end }}
-{{- with .Values.extraVolumes }}
-{{ toYaml . }}
-{{- end }}
+{{ include "redmine.runtimeVolumes" . }}
 {{- end -}}
 
 {{- define "redmine.volumeMounts" -}}
@@ -135,9 +158,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 {{- end }}
 {{- end }}
-{{- with .Values.extraVolumeMounts }}
-{{ toYaml . }}
-{{- end }}
+{{ include "redmine.runtimeVolumeMounts" . }}
 {{- end -}}
 
 {{- define "redmine.validate" -}}
@@ -151,6 +172,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 {{- if not .Values.secretKeyBase.key -}}
 {{- fail "secretKeyBase.key is required" -}}
+{{- end -}}
+{{- if and .Values.tmpDir.enabled (not .Values.tmpDir.mountPath) -}}
+{{- fail "tmpDir.mountPath is required when tmpDir is enabled" -}}
 {{- end -}}
 {{- if eq .Values.database.type "sqlite" -}}
   {{- if gt (int .Values.replicaCount) 1 -}}

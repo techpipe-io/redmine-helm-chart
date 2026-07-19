@@ -92,7 +92,7 @@ spec:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- if or $sqlitePersistence .Values.migrations.plugins }}
+          {{- if or $sqlitePersistence .Values.migrations.plugins .Values.tmpDir.enabled .Values.extraVolumeMounts }}
           volumeMounts:
             {{- if $sqlitePersistence }}
             {{- $sqlite := index .Values.persistence "sqlite" }}
@@ -114,8 +114,9 @@ spec:
               {{- end }}
             {{- end }}
             {{- end }}
+            {{- include "redmine.runtimeVolumeMounts" . | nindent 12 }}
           {{- end }}
-      {{- if or $sqlitePersistence .Values.migrations.plugins }}
+      {{- if or $sqlitePersistence .Values.migrations.plugins .Values.tmpDir.enabled .Values.extraVolumes }}
       volumes:
         {{- if $sqlitePersistence }}
         {{- $sqlite := index .Values.persistence "sqlite" }}
@@ -129,5 +130,6 @@ spec:
           persistentVolumeClaim:
             claimName: {{ include "redmine.persistenceClaimName" (dict "root" . "name" "plugins" "config" $plugins) }}
         {{- end }}
+        {{- include "redmine.runtimeVolumes" . | nindent 8 }}
       {{- end }}
 {{- end }}

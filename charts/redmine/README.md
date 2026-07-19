@@ -6,12 +6,11 @@ any dependencies on any subcharts common-libraries.
 ## Design
 
 The chart features:
-- official redmine container image
+- official redmine container image from [library/redmine](https://hub.docker.com/_/redmine)
 - exact image tag, optional digest pinning, and explicit UID/GID `999` security contexts;
 - `Recreate` rollout by default for a single RWO-backed instance;
 - startup, readiness, and liveness probes;
 - optional database wait and volume-permissions init containers;
-- existing or chart-created PVCs;
 - retained chart-created PVCs by default to protect data on uninstall;
 - external PostgreSQL, MySQL, or SQL Server configuration;
 - optional Ingress and Gateway API `HTTPRoute` exposure;
@@ -40,22 +39,6 @@ helm upgrade --install redmine ./redmine \
   --wait \
   --timeout 10m
 ```
-
-For an ephemeral CI smoke test on a cluster without a dynamic volume
-provisioner, disable both PVC mounts:
-
-```bash
-helm upgrade --install redmine ./redmine \
-  --namespace redmine \
-  --create-namespace \
-  --wait \
-  --timeout 10m \
-  --set persistence.files.enabled=false \
-  --set persistence.sqlite.enabled=false
-```
-
-The second form loses the SQLite database and attachments when the Pod is
-recreated and must not be used for a real installation.
 
 Install with an override file:
 
@@ -110,6 +93,44 @@ secretKeyBase:
 
 Changing `secret-key-base` invalidates existing sessions.
 
+## Environment and additional volumes
+
+The chart sets `TMPDIR=/var/tmp/redmine` and `RAILS_ENV=production` by default.
+It also mounts a writable `EmptyDir` at `/var/tmp/redmine`; tune or disable it
+through `tmpDir`.
+
+Use `env` for simple values. Helm merges this map with the defaults, so adding a
+variable does not remove `TMPDIR` or `RAILS_ENV`. Use `extraEnv` for complete
+Kubernetes `EnvVar` entries such as Secret references.
+
+```yaml
+env:
+  REDMINE_LANG: en
+
+extraEnv:
+  - name: SMTP_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: redmine-smtp
+        key: password
+```
+
+Any Kubernetes volume source can be passed through `extraVolumes` and mounted
+into the Redmine containers with `extraVolumeMounts`:
+ 
+```yaml
+extraVolumes:
+  - name: custom-ca
+    configMap:
+      name: custom-ca
+
+extraVolumeMounts:
+  - name: custom-ca
+    mountPath: /etc/redmine/custom-ca
+    readOnly: true
+```
+
+
 ## Existing Docker volumes
 
 Use `examples/values-first-upgrade.yaml` to attach these existing PVCs:
@@ -127,10 +148,6 @@ and `/usr/src/redmine/public`. Such mounts hide versioned core files, including
 `config/routes.rb`, and reproduce errors such as a missing
 `projects_context_menu_path` helper.
 
-If the Docker named volumes have not yet become Kubernetes PVCs, provision and
-populate them before installing this chart. A Helm chart cannot import a Docker
-volume by itself.
-
 ## Migration modes
 
 `migrations.mode=startup` is the default and best fit for the first migration
@@ -146,7 +163,7 @@ mount application PVCs.
 `migrations.mode=disabled` is intended for a separately controlled migration
 pipeline.
 
-Helm rollback does not roll back database migrations. For the first 5.1 to 6.1
+Helm rollback does not roll back database migrations. For the first 5.x to 6.x
 upgrade use `atomic: false` and `cleanup_on_fail: false`, inspect any failure,
 and restore the database/PVC snapshot if rollback is required. Re-enable atomic
 upgrades only after the schema and plugins have been validated on 6.1.3.
@@ -174,7 +191,27 @@ The upstream upgrade guide requires a database and attachment backup, copying
 only user configuration/customizations into the new release, and running core
 and plugin migrations. It explicitly warns not to overwrite core settings files.
 
-## Gateway API
+## Ingress and Gateway API
+
+The chart can use both classic inrgess and new Gateway API.
+
+Ingress example:
+```yaml
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: {}
+
+  hosts:
+    - host: redmine.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: redmine-example-com-tls
+      hosts:
+        - redmine.example.com
+```
 
 The chart can attach an `HTTPRoute` to an existing Gateway. The Gateway API
 CRDs and a compatible controller must already be installed.
@@ -207,15 +244,6 @@ Each rule automatically receives a `backendRef` to the Redmine Service and its
 configured `service.port`. The referenced Gateway listener must allow routes
 from the Redmine namespace.
 
-
-
-## Validation
-
-```bash
-helm lint ./redmine-helm-chart
-helm template redmine ./redmine-helm-chart --namespace redmine
-helm test redmine --namespace redmine
-```
 
 ## Upstream references
 

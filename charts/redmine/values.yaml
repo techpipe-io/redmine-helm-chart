@@ -273,6 +273,18 @@ diagnosticMode:
   args:
     - infinity
 
+# Simple environment variables merged with the chart defaults.
+env:
+  TMPDIR: /var/tmp/redmine
+  RAILS_ENV: production
+
+# Writable temporary storage shared by all chart-managed Redmine containers.
+tmpDir:
+  enabled: true
+  mountPath: /var/tmp/redmine
+  emptyDir: {}
+
+# Full Kubernetes EnvVar, EnvFromSource, Volume, and VolumeMount entries.
 extraEnv: []
 extraEnvFrom: []
 extraVolumes: []

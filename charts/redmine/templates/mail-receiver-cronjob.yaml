@@ -48,8 +48,6 @@ spec:
                 {{- include "redmine.commonEnv" . | nindent 16 }}
                 - name: REDMINE_NO_DB_MIGRATE
                   value: "1"
-                - name: RAILS_ENV
-                  value: production
                 - name: host
                   value: {{ .Values.mailReceiver.host | quote }}
                 - name: port
