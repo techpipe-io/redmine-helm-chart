@@ -1,0 +1,16 @@
+# The database host can be a Kubernetes Service name or any DNS name reachable
+# from the Redmine namespace
+---
+database:
+  type: postgresql
+  host: postgresql.database.svc.cluster.local
+  port: 5432
+  name: redmine
+  username: redmine
+  encoding: utf8
+  existingSecret: redmine-runtime
+  passwordKey: database-password
+  wait:
+    enabled: true
+    timeoutSeconds: 300
+...

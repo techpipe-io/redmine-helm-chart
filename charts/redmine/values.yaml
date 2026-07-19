@@ -170,6 +170,7 @@ persistence:
     create: false
     retain: true
     existingClaim: ""
+    prepareConfigurationFile: true
     accessModes:
       - ReadWriteOnce
     size: 1Gi
@@ -207,6 +208,21 @@ persistence:
     mounts:
       - mountPath: /usr/src/redmine/public/themes/techpipe
         subPath: themes/techpipe
+        readOnly: true
+  themes:
+    # Optional dedicated PVC whose root contains custom theme directories.
+    enabled: false
+    create: false
+    retain: true
+    existingClaim: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    storageClass: ""
+    annotations: {}
+    mounts:
+      - mountPath: /usr/src/redmine/public/themes/techpipe
+        subPath: techpipe
         readOnly: true
 
 volumePermissions:

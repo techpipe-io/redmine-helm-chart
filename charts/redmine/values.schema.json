@@ -58,6 +58,7 @@
           "create": {"type": "boolean"},
           "retain": {"type": "boolean"},
           "existingClaim": {"type": "string"},
+          "prepareConfigurationFile": {"type": "boolean"},
           "accessModes": {"type": "array", "items": {"type": "string"}},
           "size": {"type": "string"},
           "storageClass": {"type": "string"},

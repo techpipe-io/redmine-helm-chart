@@ -161,6 +161,39 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{ include "redmine.runtimeVolumeMounts" . }}
 {{- end -}}
 
+{{- define "redmine.prepareConfigurationContainer" -}}
+- name: prepare-configuration
+  image: {{ include "redmine.image" . }}
+  imagePullPolicy: {{ .Values.image.pullPolicy }}
+  command:
+    - bash
+    - -ec
+  args:
+    - |
+      target=/mnt/config/configuration.yml
+      if [ -d "$target" ]; then
+        if [ -n "$(find "$target" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
+          echo "$target is a non-empty directory; refusing to replace it" >&2
+          exit 1
+        fi
+        rmdir "$target"
+      fi
+      if [ ! -f "$target" ]; then
+        cp /usr/src/redmine/config/configuration.yml.example "$target"
+      fi
+  securityContext:
+    {{- toYaml .Values.containerSecurityContext | nindent 4 }}
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 64Mi
+  volumeMounts:
+    - name: data-config
+      mountPath: /mnt/config
+{{- end -}}
+
 {{- define "redmine.validate" -}}
 {{- $dbTypes := list "sqlite" "postgresql" "mysql" "sqlserver" -}}
 {{- if not (has .Values.database.type $dbTypes) -}}
@@ -220,6 +253,18 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 {{- if and .Values.gatewayAPI.httpRoute.enabled (not .Values.gatewayAPI.httpRoute.rules) -}}
 {{- fail "gatewayAPI.httpRoute.rules must contain at least one routing rule" -}}
+{{- end -}}
+{{- $configPersistence := index .Values.persistence "config" -}}
+{{- if and $configPersistence.enabled $configPersistence.prepareConfigurationFile -}}
+  {{- $configurationMountFound := false -}}
+  {{- range $mount := $configPersistence.mounts -}}
+    {{- if and (eq (trimSuffix "/" $mount.mountPath) "/usr/src/redmine/config/configuration.yml") (eq $mount.subPath "configuration.yml") -}}
+      {{- $configurationMountFound = true -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if not $configurationMountFound -}}
+  {{- fail "persistence.config.prepareConfigurationFile requires configuration.yml to be mounted with subPath=configuration.yml" -}}
+  {{- end -}}
 {{- end -}}
 {{- range $name, $config := .Values.persistence }}
   {{- if $config.enabled -}}

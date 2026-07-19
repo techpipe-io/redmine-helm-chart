@@ -1,0 +1,17 @@
+# Use `database.type=sqlserver`; the chart maps it to the official image's
+# `REDMINE_DB_SQLSERVER` configuration. Redmine 6.1 supports SQL Server 2012 or
+# later.
+---
+database:
+  type: sqlserver
+  host: sqlserver.database.svc.cluster.local
+  port: 1433
+  name: REDMINE
+  username: REDMINE
+  encoding: ""
+  existingSecret: redmine-runtime
+  passwordKey: database-password
+  wait:
+    enabled: true
+    timeoutSeconds: 300
+...

@@ -1,3 +1,5 @@
+{{- $configPersistence := index .Values.persistence "config" -}}
+{{- $prepareConfigurationFile := and $configPersistence $configPersistence.enabled $configPersistence.prepareConfigurationFile -}}
 {{- if .Values.mailReceiver.enabled }}
 apiVersion: batch/v1
 kind: CronJob
@@ -33,6 +35,10 @@ spec:
             {{- range . }}
             - name: {{ . }}
             {{- end }}
+          {{- end }}
+          {{- if $prepareConfigurationFile }}
+          initContainers:
+            {{- include "redmine.prepareConfigurationContainer" . | nindent 12 }}
           {{- end }}
           containers:
             - name: mail-receiver

@@ -148,6 +148,127 @@ and `/usr/src/redmine/public`. Such mounts hide versioned core files, including
 `config/routes.rb`, and reproduce errors such as a missing
 `projects_context_menu_path` helper.
 
+### Reusing claims created by an earlier release
+
+Chart-created PVCs have `helm.sh/resource-policy: keep` when `retain=true`, so
+they survive release removal and upgrades. Before removing them from the Helm
+manifest, verify their names and keep annotations:
+
+```bash
+kubectl -n redmine get pvc
+kubectl -n redmine annotate pvc \
+  redmine-files redmine-sqlite redmine-config \
+  helm.sh/resource-policy=keep --overwrite
+```
+
+Then reference the claims explicitly and set `create=false`. This prevents the
+chart from rendering new PVC resources while keeping the same mounts:
+
+```yaml
+persistence:
+  files:
+    enabled: true
+    create: false
+    existingClaim: redmine-files
+  sqlite:
+    enabled: true
+    create: false
+    existingClaim: redmine-sqlite
+  config:
+    enabled: true
+    create: false
+    existingClaim: redmine-config
+    prepareConfigurationFile: true
+    mounts:
+      - mountPath: /usr/src/redmine/config/configuration.yml
+        subPath: configuration.yml
+        readOnly: true
+  plugins:
+    enabled: false
+    create: false
+    existingClaim: redmine-plugins
+  public:
+    enabled: false
+    create: false
+    existingClaim: redmine-public
+```
+
+`prepareConfigurationFile=true` runs before Redmine starts. It preserves an
+existing file, copies the image's `configuration.yml.example` when the file is
+missing, and repairs the Kubernetes `subPath` failure mode where an absent file
+was created as an empty directory. A non-empty directory is never deleted; the
+init container stops and reports the problem instead.
+
+### Custom themes from an existing public PVC
+
+Do not mount the old PVC over the complete `public` directory. Mount each
+custom theme from its original `themes/<name>` path:
+
+```yaml
+persistence:
+  public:
+    enabled: true
+    create: false
+    existingClaim: redmine-public
+    mounts:
+      - mountPath: /usr/src/redmine/public/themes/my-theme
+        subPath: themes/my-theme
+        readOnly: true
+```
+
+Add one mount entry per theme. This keeps the core `public` files and built-in
+themes from the Redmine 6.1.3 image visible.
+
+### Custom themes on a dedicated PVC
+
+The optional `themes` persistence entry treats the PVC root as a collection of
+theme directories:
+
+```yaml
+persistence:
+  themes:
+    enabled: true
+    create: true
+    retain: true
+    existingClaim: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    storageClass: ""
+    mounts:
+      - mountPath: /usr/src/redmine/public/themes/my-theme
+        subPath: my-theme
+        readOnly: true
+```
+
+After the claim is created, populate its `my-theme` directory out of band or
+with an init container. Every persistence key is exposed as a Pod volume named
+`data-<key>`, so a theme image can initialize `data-themes` before the Redmine
+container starts:
+
+```yaml
+extraInitContainers:
+  - name: install-custom-themes
+    image: registry.example.com/redmine-themes:6.1
+    command:
+      - sh
+      - -ec
+    args:
+      - |
+        mkdir -p /target/my-theme
+        cp -a /themes/my-theme/. /target/my-theme/
+    volumeMounts:
+      - name: data-themes
+        mountPath: /target
+```
+
+For an already populated dedicated claim, replace `create=true` with
+`create=false` and set `existingClaim: redmine-themes`.
+
+If the Docker named volumes have not yet become Kubernetes PVCs, provision and
+populate them before installing this chart. A Helm chart cannot import a Docker
+volume by itself.
+
 ## Migration modes
 
 `migrations.mode=startup` is the default and best fit for the first migration

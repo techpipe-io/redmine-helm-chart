@@ -24,6 +24,7 @@ persistence:
     enabled: true
     create: false
     existingClaim: redmine-config
+    prepareConfigurationFile: true
     mounts:
       - mountPath: /usr/src/redmine/config/configuration.yml
         subPath: configuration.yml

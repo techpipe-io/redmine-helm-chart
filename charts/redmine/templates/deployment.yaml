@@ -1,3 +1,5 @@
+{{- $configPersistence := index .Values.persistence "config" -}}
+{{- $prepareConfigurationFile := and $configPersistence $configPersistence.enabled $configPersistence.prepareConfigurationFile -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -41,7 +43,7 @@ spec:
         - name: {{ . }}
         {{- end }}
       {{- end }}
-      {{- if or (and (ne .Values.database.type "sqlite") .Values.database.wait.enabled) .Values.volumePermissions.enabled .Values.extraInitContainers }}
+      {{- if or (and (ne .Values.database.type "sqlite") .Values.database.wait.enabled) .Values.volumePermissions.enabled $prepareConfigurationFile .Values.extraInitContainers }}
       initContainers:
         {{- if and (ne .Values.database.type "sqlite") .Values.database.wait.enabled }}
         - name: wait-for-database
@@ -108,6 +110,9 @@ spec:
             - name: {{ include "redmine.persistenceVolumeName" $name }}
               mountPath: /mnt/{{ $name }}
             {{- end }}
+        {{- end }}
+        {{- if $prepareConfigurationFile }}
+        {{- include "redmine.prepareConfigurationContainer" . | nindent 8 }}
         {{- end }}
         {{- with .Values.extraInitContainers }}
         {{- toYaml . | nindent 8 }}
