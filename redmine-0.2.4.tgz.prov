@@ -3,7 +3,7 @@ Hash: SHA512
 
 annotations:
   artifacthub.io/alternativeName: redmine
-  artifacthub.io/category: Integration and delivery
+  artifacthub.io/category: integration-delivery
   artifacthub.io/changes: |
     - kind: fixed
       description: Prepare configuration.yml before mounting it as a file subPath
@@ -45,12 +45,12 @@ version: 0.2.4
 
 ...
 files:
-  redmine-0.2.4.tgz: sha256:b58c1f829c1599c3af5efd42b81baf48e76454c33a64deee9840250f1c1833de
+  redmine-0.2.4.tgz: sha256:3aeb3ea72237c5b23fa39eb51752e2fd601d4e9d9eef5e29f05d03088d067dc2
 
 -----BEGIN PGP SIGNATURE-----
 
-wrsEARYKAG0Fgmpc16gJEBcbE75G7/Z4RRQAAAAAABwAIHNhbHRAbm90YXRpb25z
-Lm9wZW5wZ3Bqcy5vcmeHqPuPyQxr1fN2C5lMvYKnOzdDqFc4+WriLTeSRXKgFRYh
-BHZRcXMlrTt8RU86zBcbE75G7/Z4AABHEAD/dDx9V2jnUNpZfTAQRrafqmhSXcyp
-xFWX/MnnCL8fgekA/0rislZf8vSAd7Mpx1FKNI8lk8t6K73PsFOQOizL7soE
+wrsEARYKAG0Fgmpc24cJEBcbE75G7/Z4RRQAAAAAABwAIHNhbHRAbm90YXRpb25z
+Lm9wZW5wZ3Bqcy5vcme6fNo453MAZUAjwf1KdMiUoBHQmlZ+WqHxhZBxSxProxYh
+BHZRcXMlrTt8RU86zBcbE75G7/Z4AADpWwD+NlDgCR6MHLxX7amRpMIe0FrrRQFd
+awXdBw/ZaJogfUoA/A7V4vpMlQUrV0LPMx3+IJB4L4/dKpoMCOUQx4+aMBoC
 -----END PGP SIGNATURE-----
