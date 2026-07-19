@@ -1,0 +1,42 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+annotations:
+  artifacthub.io/alternativeName: redmine
+  artifacthub.io/category: integration-delivery
+  artifacthub.io/changes: |
+    - kind: added
+      description: Prepare a private TMPDIR subdirectory before Redmine starts
+  artifacthub.io/images: |
+    - name: redmine
+      image: docker.io/library/redmine:6.1.0-trixie
+  artifacthub.io/license: Apache-2.0
+apiVersion: v2
+appVersion: 6.1.3
+description: Standalone Helm chart for the official Redmine Docker image
+home: https://github.com/techpipe-io/redmine-helm-chart
+icon: https://www.redmine.org/attachments/download/3462/redmine_fluid_icon.png
+keywords:
+- - redmine
+- - project-management
+- - issue-tracker
+kubeVersion: '>=1.23.0-0'
+name: redmine
+sources:
+- - https://github.com/redmine/redmine
+- - https://github.com/docker-library/redmine
+- - https://github.com/techpipe-io/redmine-helm-chart
+type: application
+version: 0.2.5
+
+...
+files:
+  redmine-0.2.5.tgz: sha256:2302165f281432b33595e15c9ffe210d1d714f0ec066dbbc9b521d81f8421f2c
+
+-----BEGIN PGP SIGNATURE-----
+
+wrsEARYKAG0Fgmpc/RkJEBcbE75G7/Z4RRQAAAAAABwAIHNhbHRAbm90YXRpb25z
+Lm9wZW5wZ3Bqcy5vcmepP6E1MFg8uYA4+9dB9l1jZAIIZgkhgzzU2R+cPY32DhYh
+BHZRcXMlrTt8RU86zBcbE75G7/Z4AAC0DgEAswSL7b5qLCD+4h3MGWKgGoEM5puF
++CteZOg8dOS00SUBAMjdTFhrsX1zK+D564yWXiyob/vrpdWtHttkQBDwp+0N
+-----END PGP SIGNATURE-----
