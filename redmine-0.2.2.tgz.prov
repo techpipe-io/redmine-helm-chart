@@ -1,0 +1,50 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+annotations:
+  artifacthub.io/alternativeName: redmine
+  artifacthub.io/category: Integration and delivery
+  artifacthub.io/changes: |
+    - kind: changed
+      description: Renamed the chart to redmine
+    - kind: added
+      description: Added Gateway API HTTPRoute support
+    - kind: added
+      description: Added a stable chart-managed SECRET_KEY_BASE for minimal installs
+    - kind: changed
+      description: Default SQLite installation now creates its own files and database PVCs
+    - kind: changed
+      description: Changed images to 6.1.3-trixie
+  artifacthub.io/images: |
+    - name: redmine
+      image: docker.io/library/redmine:6.1.0-trixie
+  artifacthub.io/license: Apache-2.0
+apiVersion: v2
+appVersion: 6.1.3
+description: Standalone Helm chart for the official Redmine Docker image
+home: https://github.com/techpipe-io/redmine-helm-chart
+icon: https://www.redmine.org/attachments/3462/redmine_fluid_icon.png
+keywords:
+- - redmine
+- - project-management
+- - issue-tracker
+kubeVersion: '>=1.23.0-0'
+name: redmine
+sources:
+- - https://github.com/redmine/redmine
+- - https://github.com/docker-library/redmine
+- - https://github.com/techpipe-io/redmine-helm-chart
+type: application
+version: 0.2.2
+
+...
+files:
+  redmine-0.2.2.tgz: sha256:5bb94258d3738c4552e2c308147d9f38296a4f41915a6d4afd4c651be7c22346
+
+-----BEGIN PGP SIGNATURE-----
+
+wrsEARYKAG0FgmpcWA8JEBcbE75G7/Z4RRQAAAAAABwAIHNhbHRAbm90YXRpb25z
+Lm9wZW5wZ3Bqcy5vcmeiJ+Oh0c9PlBzaUiGLhxQ21bfjguIGOhrm6SYMRSzD3RYh
+BHZRcXMlrTt8RU86zBcbE75G7/Z4AADetAD/arY2oBxJeUb+RYvQ/AsYRLrZzznE
+k1Udfi9F5NLvkocA/334sKOHDZAiW8jIMp+IRIZYJ/RVfSJZpRGBXqDIJqYB
+-----END PGP SIGNATURE-----
